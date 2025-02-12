@@ -18,6 +18,14 @@ export interface VMStartRequest {
   plan: 'standard' | 'premium';
 }
 
+interface VMStartParams {
+  PROXMOX_API: string;
+  USERNAME: string;
+  PASSWORD: string;
+  NODE: string;
+  VMID: string;
+}
+
 let statusCheckInterval: NodeJS.Timeout;
 
 export const vmService = {
@@ -48,16 +56,17 @@ export const vmService = {
     }
   },
 
-  async startVM(data: VMStartRequest): Promise<void> {
+  async startVM(params: VMStartParams) {
     try {
-      await apiRequest('/vm/start', {
+      const response = await apiRequest('/vm/start', {
         method: 'POST',
-        body: JSON.stringify(data),
+        body: JSON.stringify(params)
       });
       toast.success('Máquina iniciada com sucesso! Aguarde enquanto preparamos tudo.', {
         duration: 5000
       });
-      this.startStatusCheck(data.vm_id);
+      this.startStatusCheck(params.VMID);
+      return response;
     } catch (error) {
       toast.error('Erro ao iniciar máquina. Verifique sua assinatura e tente novamente.', {
         duration: 5000
@@ -131,6 +140,16 @@ export const vmService = {
   stopStatusCheck() {
     if (statusCheckInterval) {
       clearInterval(statusCheckInterval);
+    }
+  },
+
+  async getVMStatus(vmId: string) {
+    try {
+      const response = await apiRequest(`/vm/${vmId}/status`);
+      return response;
+    } catch (error) {
+      console.error('Erro ao obter status da VM:', error);
+      throw error;
     }
   }
 };

@@ -20,7 +20,10 @@ export const authService = {
     try {
       return await apiRequest<LoginResponse>('/auth/login', {
         method: 'POST',
-        body: JSON.stringify(credentials),
+        body: JSON.stringify({
+          email: credentials.login,
+          password: credentials.password
+        }),
       });
     } catch (error: any) {
       if (error.status === 401) {

@@ -1,6 +1,6 @@
 import { toast } from 'sonner';
 
-const API_URL = import.meta.env.VITE_API;
+const API_URL = 'http://localhost:5000/api';
 
 export class APIError extends Error {
   constructor(public status: number, message: string) {
@@ -48,14 +48,10 @@ function handleAPIError(error: any): string {
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
-    const error = await response.text();
-    throw new APIError(response.status, error);
+    const error = await response.json();
+    throw new Error(error.message || 'Erro ao processar resposta do servidor');
   }
-  try {
-    return await response.json();
-  } catch {
-    throw new APIError(500, 'Erro ao processar resposta do servidor');
-  }
+  return response.json();
 }
 
 export async function apiRequest<T>(
